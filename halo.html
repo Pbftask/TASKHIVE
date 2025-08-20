@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tebak Angka</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+    }
+    h1 {
+      margin-top: 30px;
+      font-size: 32px;
+      background: linear-gradient(to right, #2196f3, #00d4ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    input {
+      padding: 10px;
+      font-size: 18px;
+      border-radius: 20px;
+      border: none;
+      width: 250px;
+      text-align: center;
+      margin: 20px 0;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 20px;
+      background: linear-gradient(to right, #2196f3, #00d4ff);
+      color: white;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      opacity: 0.8;
+    }
+    #message {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+    #lives {
+      margin-top: 10px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>TEBAK ANGKA</h1>
+  <input type="number" id="guess" placeholder="ketik jawaban di sini">
+  <br>
+  <button onclick="checkGuess()">Enter</button>
+  <button onclick="startGame()">Play</button>
+  <div id="message"></div>
+  <div id="lives"></div>
+
+  <script>
+    let randomNumber;
+    let lives;
+
+    function startGame() {
+      randomNumber = Math.floor(Math.random() * 100) + 1; // angka 1-100
+      lives = 3;
+      document.getElementById("message").textContent = "Game dimulai! Tebak angka 1-100.";
+      document.getElementById("lives").textContent = "Nyawa: " + lives;
+      document.getElementById("guess").value = "";
+    }
+
+    function checkGuess() {
+      if (!randomNumber) {
+        document.getElementById("message").textContent = "Tekan Play dulu untuk mulai!";
+        return;
+      }
+
+      let guess = parseInt(document.getElementById("guess").value);
+      if (isNaN(guess)) {
+        document.getElementById("message").textContent = "Masukkan angka valid!";
+        return;
+      }
+
+      if (guess === randomNumber) {
+        document.getElementById("message").textContent = "Selamat! Tebakanmu benar 🎉";
+        randomNumber = null; // game selesai
+      } else {
+        lives--;
+        if (lives <= 0) {
+          document.getElementById("message").textContent = "Game Over! Angka yang benar adalah " + randomNumber;
+          document.getElementById("lives").textContent = "Nyawa: 0";
+          randomNumber = null;
+        } else {
+          if (guess < randomNumber) {
+            document.getElementById("message").textContent = "Terlalu kecil!";
+          } else {
+            document.getElementById("message").textContent = "Terlalu besar!";
+          }
+          document.getElementById("lives").textContent = "Nyawa: " + lives;
+        }
+      }
+      document.getElementById("guess").value = "";
+    }
+  </script>
+</body>
+</html>

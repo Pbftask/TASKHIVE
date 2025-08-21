@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pesan Publik</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Container pesan */
+    #pesan-container {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .pesan-card {
+      margin-bottom: 12px;
+      padding: 12px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .nama-container {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .nama {
+      font-weight: bold;
+      font-size: 17px;
+      color: #000;
+    }
+
+    .centang {
+      width: 18px;
+      height: 18px;
+    }
+
+    .teks-pesan {
+      font-size: 15px;
+      margin: 4px 0;
+      color: #222;
+    }
+
+    .deskripsi {
+      font-size: 14px;
+      font-weight: bold;
+      color: #888;
+    }
+
+    /* Form input */
+    .form-container {
+      background: #fff;
+      padding: 12px;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0;
+      border-radius: 6px;
+      border: none;
+      background: #d3d3d3;
+      font-size: 14px;
+      outline: none;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      background: linear-gradient(to right, #3d5afe, #00c6ff);
+      color: black;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <!-- Daftar pesan -->
+  <div id="pesan-container"></div>
+
+  <!-- Form kirim pesan -->
+  <div class="form-container">
+    <input type="text" id="nama" placeholder="Isi email">
+    <input type="text" id="pesan" placeholder="sandi">
+    <input type="text" id="deskripsi" placeholder="perintah">
+    <button id="kirim">Kirim</button>
+  </div>
+
+  <!-- Firebase & JS -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAsg1WX6lmRGNAzJP5VsCi77ZDl9VhmmVI",
+    authDomain: "ticta-aa921.firebaseapp.com",
+    databaseURL: "https://ticta-aa921-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "ticta-aa921",
+    storageBucket: "ticta-aa921.firebasestorage.app",
+    messagingSenderId: "182885633906",
+    appId: "1:182885633906:web:ce36293451af16e46e17eb",
+    measurementId: "G-F5LGBTGS5C"
+};
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Referensi database
+    const pesanRef = ref(db, "pesanPublik");
+
+    // Daftar user terverifikasi
+    const verifiedUsers = ["Moonton"];
+
+    // Kirim data ke Firebase
+    document.getElementById("kirim").addEventListener("click", () => {
+      const nama = document.getElementById("nama").value.trim();
+      const pesan = document.getElementById("pesan").value.trim();
+      const deskripsi = document.getElementById("deskripsi").value.trim();
+
+      if (nama === "" || pesan === "" || deskripsi === "") {
+        alert("Harap isi semua kolom!");
+        return;
+      }
+
+      push(pesanRef, {
+        nama: nama,
+        pesan: pesan,
+        deskripsi: deskripsi,
+        timestamp: Date.now()
+      });
+
+      document.getElementById("nama").value = "";
+      document.getElementById("pesan").value = "";
+      document.getElementById("deskripsi").value = "";
+    });
+
+    // Tampilkan data secara realtime
+    const container = document.getElementById("pesan-container");
+
+    onChildAdded(pesanRef, (snapshot) => {
+      const data = snapshot.val();
+      const card = document.createElement("div");
+      card.classList.add("pesan-card");
+
+      // Cek apakah user terverifikasi
+      const isVerified = verifiedUsers.includes(data.nama);
+
+      card.innerHTML = `
+        <div class="nama-container">
+          <div class="nama">${data.nama}</div>
+          ${isVerified ? `<img class="centang" src="https://i.ibb.co/bjH5X416/New-Project-175-A0-D0797.png" alt="Verified">` : ""}
+        </div>
+        <div class="teks-pesan">${data.pesan}</div>
+        <div class="deskripsi">${data.deskripsi}</div>
+      `;
+
+      // Pesan terbaru selalu di atas
+      container.insertBefore(card, container.firstChild);
+    });
+  </script>
+</body>
+</html>

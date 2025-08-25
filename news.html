@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T3 Game - Download</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      margin: 20px;
+      text-align: center;
+    }
+    .app-container {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .app-logo {
+      width: 80px;
+      border-radius: 20%;
+    }
+    .app-name {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    .app-dev {
+      font-size: 14px;
+      color: gray;
+    }
+    .download-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 12px;
+      width: 90%;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(to right, #4a90e2, #007aff);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .download-btn:hover {
+      opacity: 0.9;
+    }
+    .download-count {
+      font-size: 14px;
+      margin-top: 10px;
+    }
+    .about-title {
+      font-weight: bold;
+      margin-top: 15px;
+    }
+    .about-text {
+      font-size: 14px;
+      color: #444;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Logo -->
+    <img src="https://i.ibb.co.com/QFGr7ryb/logo.png" alt="T3 Game Logo" class="app-logo">
+    
+    <!-- Nama & Developer -->
+    <div class="app-name">T3 Game</div>
+    <div class="app-dev">luminUX</div>
+
+    <!-- Tombol Download -->
+    <a id="downloadLink" href="#" class="download-btn">Download</a>
+
+    <!-- Jumlah Download -->
+    <div class="download-count">download - <span id="downloadCount">0</span></div>
+
+    <!-- Tentang Aplikasi -->
+    <div class="about-title">» tentang aplikasi</div>
+    <div class="about-text">online • no iklan • +1 game</div>
+  </div>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    // Config kamu
+    const firebaseConfig = {
+      apiKey: "AIzaSyAsg1WX6lmRGNAzJP5VsCi77ZDl9VhmmVI",
+      authDomain: "ticta-aa921.firebaseapp.com",
+      databaseURL: "https://ticta-aa921-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "ticta-aa921",
+      storageBucket: "ticta-aa921.firebasestorage.app",
+      messagingSenderId: "182885633906",
+      appId: "1:182885633906:web:428daa318e5e22cc6e17eb",
+      measurementId: "G-LNVL0KV2NQ"
+    };
+
+    // Init Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const counterRef = ref(db, "downloads/t3game");
+
+    // Tampilkan jumlah download realtime
+    onValue(counterRef, (snapshot) => {
+      if (snapshot.exists()) {
+        document.getElementById("downloadCount").textContent = snapshot.val();
+      } else {
+        document.getElementById("downloadCount").textContent = 0;
+      }
+    });
+
+    // Event klik download
+    document.getElementById("downloadLink").addEventListener("click", async (e) => {
+      e.preventDefault(); // cegah link langsung jalan
+      const snap = await get(counterRef);
+      let count = 0;
+      if (snap.exists()) count = snap.val();
+      await set(counterRef, count + 1);
+
+      // redirect ke link asli
+      window.location.href = "https://drive.google.com/uc?export=download&id=1SgoU6ZZjwKeiWCtVsJ8AiOe8vEmZsCrI";
+    });
+  </script>
+</body>
+</html>
+<p>di sponsori oleh luminUX</p>
+<h3>BY RIFQY</h3>

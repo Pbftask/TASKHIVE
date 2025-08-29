@@ -1,0 +1,257 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Chat Realtime</title>
+  <style>
+    :root{
+      --bg:#0f0f10; --card:#1a1b1e; --muted:#8a8f98; --accent:#22c55e; --danger:#ef4444; --ring:#2a2d33;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:#e8eaee;font-family:system-ui,Segoe UI,Roboto,Ubuntu,Helvetica,Arial}
+    .wrap{display:grid;grid-template-rows:auto 1fr auto; height:100dvh}/* TOP BAR */
+.top{display:flex;gap:.6rem;padding:.7rem; background:#000000cc; backdrop-filter: blur(10px); position:sticky;top:0;z-index:5}
+.input{flex:1; display:flex; align-items:center; gap:.5rem; background:#2a2d33; border:1px solid #363a41; border-radius:16px; padding:.6rem .8rem}
+.input input{outline:none;border:0;background:transparent;color:#fff;width:100%}
+.input::placeholder{color:var(--muted)}
+.mine{width:46%;}
+.btn{appearance:none;border:0;border-radius:14px; padding:.6rem .9rem; background:#2a2d33;color:#fff; font-weight:600}
+.btn:active{transform:scale(.98)}
+
+/* MAIN */
+.main{display:grid; grid-template-columns: 280px 1fr; gap:.8rem; padding:.8rem}
+@media (max-width: 860px){.main{grid-template-columns:1fr}}
+
+/* SIDEBAR */
+.side{background:var(--card); border:1px solid var(--ring); border-radius:18px; overflow:hidden; display:flex; flex-direction:column; min-height:0}
+.side-hd{display:flex;align-items:center;justify-content:space-between;padding:.8rem 1rem;border-bottom:1px solid var(--ring)}
+.side-list{overflow:auto}
+.chat-item{display:flex;gap:.7rem; align-items:center; padding:.7rem 1rem; border-bottom:1px solid #22262b; cursor:pointer}
+.chat-item:hover{background:#212329}
+.avatar{width:36px;height:36px;border-radius:50%;background:#2e3239;display:grid;place-items:center;font-weight:700}
+.small{font-size:.8rem;color:var(--muted)}
+.verified-icon{width:16px;height:16px;margin-left:4px;vertical-align:middle}
+
+/* CHAT AREA */
+.chat{background:var(--card); border:1px solid var(--ring); border-radius:18px; display:grid; grid-template-rows:auto 1fr auto; min-height:0}
+.chat-hd{padding:.8rem 1rem;border-bottom:1px solid var(--ring); display:flex; gap:.6rem; align-items:center}
+.name{font-weight:700;display:inline-flex;align-items:center}
+.msgs{padding:1rem; overflow:auto; display:flex; flex-direction:column; gap:.5rem;}
+.b{max-width:80%; padding:.6rem .8rem; border-radius:14px; line-height:1.3; word-wrap:break-word; white-space:pre-wrap}
+.me{align-self:flex-end; background:#2b8a3e}
+.other{align-self:flex-start; background:#2a2d33}
+.meta{font-size:.75rem; color:#c9cdd4; opacity:.8; margin-top:.2rem}
+
+.chat-send{display:flex; gap:.5rem; padding:.8rem; border-top:1px solid var(--ring)}
+.chat-send input{flex:1; border:1px solid #363a41; background:#2a2d33; border-radius:16px; padding:.7rem .9rem; color:#fff}
+.send{background:var(--accent)}
+.danger{background:var(--danger)}
+.muted{color:var(--muted)}
+.empty{display:grid;place-items:center;color:var(--muted)}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- TOP BAR: search & set my name -->
+    <div class="top">
+      <label class="input" title="Cari pengguna untuk mulai chat">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.35-4.35" stroke="#aab2bd" stroke-width="2" stroke-linecap="round"/><circle cx="10" cy="10" r="7" stroke="#aab2bd" stroke-width="2"/></svg>
+        <input id="q" placeholder="cari nama pengguna" />
+      </label>
+      <label class="input mine" title="Tentukan nama kamu">
+        <input id="meName" placeholder="isi nama kamu" />
+      </label>
+      <button id="saveMe" class="btn">Simpan</button>
+    </div><div class="main">
+  <!-- SIDEBAR: user list / recents -->
+  <section class="side">
+    <div class="side-hd">
+      <div><strong>Pengguna</strong> <span class="small">(ketik di atas untuk cari)</span></div>
+      <button id="showAll" class="btn">Semua</button>
+    </div>
+    <div id="users" class="side-list"></div>
+  </section>
+
+  <!-- CHAT PANEL -->
+  <section class="chat">
+    <div class="chat-hd">
+      <div class="avatar" id="peerAvatar">?</div>
+      <div>
+        <div class="name" id="peerName">Belum memilih lawan chat</div>
+        <div class="small" id="peerInfo">Pilih pengguna untuk mulai</div>
+      </div>
+      <div style="margin-left:auto; display:flex; gap:.4rem">
+        <button id="clearChat" class="btn danger" title="Hapus chat ini">Hapus</button>
+      </div>
+    </div>
+    <div id="msgs" class="msgs empty">⚡ Pilih pengguna di kiri untuk melihat percakapan…</div>
+    <div class="chat-send">
+      <input id="text" placeholder="pesan"/>
+      <button id="send" class="btn send">Kirim</button>
+    </div>
+  </section>
+</div>
+
+  </div>  <!-- Firebase v10 Modular SDK -->  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import { getDatabase, ref, set, update, onValue, push, remove, query, orderByChild, startAt, endAt, limitToFirst } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyConeB1_hVdCuUvUyaaB4l-L0eYhl0wGfA",
+    authDomain: "akang-353ae.firebaseapp.com",
+    projectId: "akang-353ae",
+    storageBucket: "akang-353ae.firebasestorage.app",
+    messagingSenderId: "355232284903",
+    appId: "1:355232284903:web:6a58d95a7c5a1c7515a242"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const $ = sel => document.querySelector(sel);
+    const meName = $('#meName');
+    const q = $('#q');
+    const usersEl = $('#users');
+    const msgsEl = $('#msgs');
+    const peerNameEl = $('#peerName');
+    const peerInfoEl = $('#peerInfo');
+    const peerAvatar = $('#peerAvatar');
+
+    let ME = localStorage.getItem('chat_me') || '';
+    let PEER = null;
+    let MSGS_UNSUB = null;
+
+    if (ME) meName.value = ME;
+
+    $('#saveMe').onclick = async () => {
+      const name = (meName.value||'').trim();
+      if (!name) { alert('Isi nama kamu.'); return; }
+      ME = name;
+      localStorage.setItem('chat_me', ME);
+      const id = name.toLowerCase();
+      await update(ref(db, `users/${id}`), {
+        displayName: name,
+        displayNameLower: id,
+        verified: false,
+        lastSeen: Date.now()
+      });
+      toast('Nama disimpan.');
+      refreshUsers();
+    };
+
+    function chatId(a,b){
+      const x=a.toLowerCase(), y=b.toLowerCase();
+      return x<y? `${x}__${y}` : `${y}__${x}`;
+    }
+
+    async function refreshUsers(){
+      usersEl.innerHTML = '<div class="small" style="padding:10px">Memuat…</div>';
+      const term = (q.value||'').trim().toLowerCase();
+      let qRef;
+      if(term){
+        qRef = query(ref(db,'users'), orderByChild('displayNameLower'), startAt(term), endAt(term+'\uf8ff'), limitToFirst(30));
+      } else {
+        qRef = query(ref(db,'users'), orderByChild('lastSeen'), limitToFirst(50));
+      }
+      onValue(qRef, snap => {
+        const val = snap.val()||{};
+        const items = Object.values(val)
+          .filter(u => ME ? u.displayNameLower !== ME.toLowerCase() : true)
+          .sort((a,b)=> (b.lastSeen||0)-(a.lastSeen||0));
+        usersEl.innerHTML = items.map(u => userRow(u)).join('') || '<div class="small" style="padding:12px">Tidak ada pengguna. Ketik namamu lalu klik Simpan.</div>';
+        usersEl.querySelectorAll('[data-user]').forEach(el=>{
+          el.onclick = ()=> openChat(el.getAttribute('data-user'));
+        });
+      }, {onlyOnce:true});
+    }
+
+    function userRow(u){
+      const ini = (u.displayName||'?').slice(0,1).toUpperCase();
+      const last = u.lastSeen? new Date(u.lastSeen).toLocaleString() : '—';
+      const verifiedIcon = u.verified ? `<img class="verified-icon" src="https://i.ibb.co/bjH5X416/New-Project-175-A0-D0797.png" alt="✔"/>` : '';
+      return `<div class="chat-item" data-user="${u.displayName}">
+        <div class="avatar">${ini}</div>
+        <div>
+          <div><strong>${escapeHtml(u.displayName)}</strong>${verifiedIcon}</div>
+          <div class="small">Aktif: ${last}</div>
+        </div>
+      </div>`
+    }
+
+    $('#showAll').onclick = ()=>{ q.value=''; refreshUsers(); };
+    q.addEventListener('input', debounce(refreshUsers, 300));
+
+    async function openChat(peer){
+      if(!ME){ alert('Isi & simpan nama kamu dulu.'); return; }
+      PEER = peer;
+      peerNameEl.innerHTML = escapeHtml(peer);
+      peerInfoEl.textContent = `Chat dengan ${peer}`;
+      peerAvatar.textContent = peer.slice(0,1).toUpperCase();
+      msgsEl.classList.remove('empty');
+      msgsEl.innerHTML = '';
+
+      if(MSGS_UNSUB) MSGS_UNSUB();
+
+      const cid = chatId(ME, PEER);
+      const msgsRef = ref(db, `chats/${cid}/messages`);
+      MSGS_UNSUB = onValue(msgsRef, snap =>{
+        const data = snap.val()||{};
+        const arr = Object.entries(data).map(([k,v])=> ({id:k, ...v}))
+          .sort((a,b)=> (a.ts||0)-(b.ts||0));
+        renderMsgs(arr);
+        requestAnimationFrame(()=>{ msgsEl.scrollTop = msgsEl.scrollHeight; });
+      });
+    }
+
+    function renderMsgs(list){
+      if(!list.length){ msgsEl.innerHTML = '<div class="small muted">Belum ada pesan. Mulai ngobrol ✨</div>'; return; }
+      msgsEl.innerHTML = list.map(m => msgBubble(m)).join('');
+    }
+
+    function msgBubble(m){
+      const mine = m.from === ME;
+      const when = m.ts ? new Date(m.ts).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : '';
+      return `<div class="b ${mine?'me':'other'}">
+        ${escapeHtml(m.text||'')}
+        <div class="meta">${escapeHtml(m.from||'')} · ${when}</div>
+      </div>`
+    }
+
+    $('#send').onclick = sendMsg;
+    $('#text').addEventListener('keydown', e=>{ if(e.key==='Enter') sendMsg(); });
+
+    async function sendMsg(){
+      const text = ($('#text').value||'').trim();
+      if(!text) return;
+      if(!ME){ alert('Isi & simpan nama kamu.'); return; }
+      if(!PEER){ alert('Pilih lawan chat di daftar pengguna.'); return; }
+      const cid = chatId(ME,PEER);
+      const mref = ref(db, `chats/${cid}/messages`);
+      const newRef = push(mref);
+      await set(newRef, { from: ME, to: PEER, text, ts: Date.now() });
+      $('#text').value = '';
+      await update(ref(db, `users/${ME.toLowerCase()}`), { lastSeen: Date.now() });
+    }
+
+    $('#clearChat').onclick = async ()=>{
+      if(!PEER) return;
+      const ok = confirm('Hapus semua pesan pada chat ini?');
+      if(!ok) return;
+      const cid = chatId(ME,PEER);
+      await remove(ref(db, `chats/${cid}`));
+    }
+
+    function debounce(fn, ms){ let t; return (...a)=>{ clearTimeout(t); t=setTimeout(()=>fn(...a), ms); } }
+    function escapeHtml(s){
+      return (s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    }
+    function toast(t){
+      const el=document.createElement('div');
+      el.textContent=t; el.style.cssText='position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#222933;color:#fff;padding:.6rem .9rem;border-radius:12px;border:1px solid #2d3340;z-index:50;box-shadow:0 6px 24px rgba(0,0,0,.35)';
+      document.body.appendChild(el); setTimeout(()=>el.remove(), 1800);
+    }
+
+    refreshUsers();
+  </script></body>
+</html>

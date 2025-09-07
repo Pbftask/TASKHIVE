@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Top Up Centang</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .saldo-box {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .saldo-box img {
+      width: 30px;
+      margin-right: 5px;
+    }
+
+    .saldo {
+      font-size: 22px;
+      font-weight: bold;
+      margin-right: 10px;
+    }
+
+    input {
+      padding: 8px;
+      font-size: 16px;
+      border: 2px solid #ccc;
+      border-radius: 5px;
+      width: 60%;
+      max-width: 300px;
+      margin: 10px 0;
+      text-align: center;
+    }
+
+    .card {
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 400px;
+      text-align: left;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .buy-section {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .buy-section img {
+      width: 50px;
+      margin-right: 10px;
+    }
+
+    .buy-btn {
+      display: inline-block;
+      background: #2979ff;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+      border: none;
+    }
+
+    .buy-btn:hover {
+      background: #0d47a1;
+    }
+
+    .bonus-box {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      margin: 15px auto;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .bonus-box img {
+      width: 30px;
+    }
+
+    .bonus-btn {
+      background: #2979ff;
+      color: white;
+      padding: 10px 15px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .bonus-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .countdown {
+      font-size: 14px;
+      color: #555;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="saldo-box">
+    <img src="https://i.ibb.co.com/933cG1KL/New-Project-133-35-C5129.png" alt="S" />
+    <span class="saldo" id="saldo">0</span>
+  </div>
+
+  <input type="text" id="nama" placeholder="Masukkan nama anda" />
+
+  <div class="card">
+    <div class="buy-section">
+      <img src="https://i.ibb.co/bjH5X416/New-Project-175-A0-D0797.png" alt="Centang" />
+      <div>
+        <b>Centang Biru</b><br>
+        Harga: <b id="harga">100000</b> S
+      </div>
+    </div>
+    <p>Jika anda membeli, anda harus konfirmasi di WhatsApp admin. Tekan Buy untuk melanjutkan.</p>
+    <button class="buy-btn" id="buyBtn">Buy</button>
+  </div>
+
+  <div class="bonus-box">
+    <div style="display:flex; align-items:center;">
+      <img src="https://i.ibb.co.com/933cG1KL/New-Project-133-35-C5129.png" alt="Coin" />
+      <span style="margin-left:5px;">+1000 S</span>
+    </div>
+    <button class="bonus-btn" id="bonusBtn">Ambil Bonus</button>
+  </div>
+  <div class="countdown" id="countdown"></div>
+
+  <script>
+    const saldoEl = document.getElementById("saldo");
+    const namaInput = document.getElementById("nama");
+    const buyBtn = document.getElementById("buyBtn");
+    const bonusBtn = document.getElementById("bonusBtn");
+    const countdownEl = document.getElementById("countdown");
+    const HARGA_CENTANG = 100000;
+    const BONUS_SALDO = 1000;
+    const BONUS_INTERVAL = 24 * 60 * 60 * 1000;
+
+    // Ambil data dari localStorage
+    let saldo = parseInt(localStorage.getItem("saldo")) || 0;
+    let nama = localStorage.getItem("nama") || "";
+    let lastBonus = localStorage.getItem("lastBonus") || 0;
+
+    saldoEl.textContent = saldo;
+    namaInput.value = nama;
+
+    // Simpan nama otomatis
+    namaInput.addEventListener("input", () => {
+      localStorage.setItem("nama", namaInput.value);
+    });
+
+    // Tombol Buy
+    buyBtn.addEventListener("click", () => {
+      if (saldo >= HARGA_CENTANG) {
+        window.open(`https://wa.me/6283865566942?text=Halo%20Admin,%20saya%20(${namaInput.value})%20ingin%20beli%20Centang%20Biru.`, "_blank");
+      } else {
+        alert("Saldo tidak cukup! Silakan tambahkan saldo terlebih dahulu.");
+      }
+    });
+
+    // Cek bonus harian
+    function updateBonus() {
+      const now = Date.now();
+      const diff = now - lastBonus;
+
+      if (diff >= BONUS_INTERVAL) {
+        bonusBtn.disabled = false;
+        countdownEl.textContent = "";
+      } else {
+        bonusBtn.disabled = true;
+        const remaining = BONUS_INTERVAL - diff;
+        const hours = String(Math.floor(remaining / (1000 * 60 * 60))).padStart(2, "0");
+        const minutes = String(Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, "0");
+        const seconds = String(Math.floor((remaining % (1000 * 60)) / 1000)).padStart(2, "0");
+        countdownEl.textContent = `Bonus bisa diambil lagi dalam ${hours}:${minutes}:${seconds}`;
+        setTimeout(updateBonus, 1000);
+      }
+    }
+
+    bonusBtn.addEventListener("click", () => {
+      saldo += BONUS_SALDO;
+      saldoEl.textContent = saldo;
+      localStorage.setItem("saldo", saldo);
+      lastBonus = Date.now();
+      localStorage.setItem("lastBonus", lastBonus);
+      updateBonus();
+    });
+
+    updateBonus();
+  </script>
+</body>
+</html>

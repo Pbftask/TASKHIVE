@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vote Badge</title>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #fff;
+      padding: 15px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .vote-container {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .vote-card {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      background: #fff;
+      padding: 10px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      gap: 12px;
+    }
+
+    .vote-card img {
+      width: 65px;
+      height: 65px;
+      object-fit: contain;
+      border: 2px solid #ddd;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .vote-btn {
+      background: red;
+      color: white;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .vote-btn:disabled {
+      background: gray;
+      cursor: not-allowed;
+    }
+
+    .vote-count {
+      margin-left: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <h1>VOTE</h1>
+  <p>VOTING untuk centang baru untuk tap-tap game</p>
+  <div class="vote-container">
+    <div class="vote-card">
+      <img src="https://i.ibb.co.com/8Lqkh8t2/New-Project-142-937-BBB3.png">
+      <button class="vote-btn" onclick="voteBadge('badge1')">Vote</button>
+      <span class="vote-count" id="badge1-count">vote : 0</span>
+    </div>
+
+    <div class="vote-card">
+      <img src="https://i.ibb.co.com/LzqfRxYf/New-Project-142-8-BF01-D4.png">
+      <button class="vote-btn" onclick="voteBadge('badge2')">Vote</button>
+      <span class="vote-count" id="badge2-count">vote : 0</span>
+    </div>
+
+    <div class="vote-card">
+      <img src="https://i.ibb.co.com/KzQdJtCm/New-Project-142-859-A8-BE.png">
+      <button class="vote-btn" onclick="voteBadge('badge3')">Vote</button>
+      <span class="vote-count" id="badge3-count">vote : 0</span>
+    </div>
+
+    <div class="vote-card">
+      <img src="https://i.ibb.co.com/Gv9gFRP8/New-Project-142-E7-CD4-DB.png">
+      <button class="vote-btn" onclick="voteBadge('badge4')">Vote</button>
+      <span class="vote-count" id="badge4-count">vote : 0</span>
+    </div>
+
+    <div class="vote-card">
+      <img src="https://i.ibb.co.com/pBS7bsSp/New-Project-142-F278-EA7.png">
+      <button class="vote-btn" onclick="voteBadge('badge5')">Vote</button>
+      <span class="vote-count" id="badge5-count">vote : 0</span>
+    </div>
+
+    <div class="vote-card">
+      <img src="https://i.ibb.co.com/DPRXyBMs/New-Project-142-277853-E.png">
+      <button class="vote-btn" onclick="voteBadge('badge6')">Vote</button>
+      <span class="vote-count" id="badge6-count">vote : 0</span>
+    </div>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyConeB1_hVdCuUvUyaaB4l-L0eYhl0wGfA",
+      authDomain: "akang-353ae.firebaseapp.com",
+      databaseURL: "https://akang-353ae-default-rtdb.firebaseio.com",
+      projectId: "akang-353ae",
+      storageBucket: "akang-353ae.firebasestorage.app",
+      messagingSenderId: "355232284903",
+      appId: "1:355232284903:web:6a58d95a7c5a1c7515a242"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Update vote count realtime
+    function updateVotes() {
+      db.ref("votes").on("value", snapshot => {
+        const data = snapshot.val() || {};
+        for (let i = 1; i <= 6; i++) {
+          const badge = "badge" + i;
+          document.getElementById(`${badge}-count`).innerText = "vote : " + (data[badge] || 0);
+        }
+      });
+    }
+    updateVotes();
+
+    // Disable all vote buttons if already voted
+    function checkVoted() {
+      const voted = localStorage.getItem("hasVoted");
+      if (voted) {
+        document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
+      }
+    }
+    checkVoted();
+
+    // Vote function
+    function voteBadge(badge) {
+      const hasVoted = localStorage.getItem("hasVoted");
+      if (hasVoted) {
+        alert("Kamu sudah memilih satu badge dan tidak bisa memilih lagi!");
+        return;
+      }
+
+      // Tambahkan vote ke Firebase
+      const ref = db.ref("votes/" + badge);
+      ref.transaction(current => (current || 0) + 1);
+
+      // Simpan status sudah memilih
+      localStorage.setItem("hasVoted", badge);
+
+      // Disable semua tombol
+      document.querySelectorAll(".vote-btn").forEach(btn => btn.disabled = true);
+
+      alert("Terima kasih, kamu sudah memilih!");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Beli Centang Biru - Topup via WhatsApp</title>
+  <style>
+    :root{
+      --blue: #0945ff; /* tombol biru */
+      --soft-blue: #0b43f8;
+      --card-border: #111;
+      --muted: #7b7b7b;
+    }
+    *{box-sizing:border-box}
+    body{
+      font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+      margin:0;
+      background:#ffffff;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      padding:28px;
+      min-height:100vh;
+    }
+
+    .container{
+      width:100%;
+      max-width:420px;
+    }
+
+    .card{
+      border:4px solid var(--card-border);
+      border-radius:14px;
+      padding:14px;
+      display:flex;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .icon{
+      min-width:72px;
+      min-height:72px;
+      border-radius:12px;
+      overflow:hidden;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: inset 0 -6px 12px rgba(0,0,0,0.08);
+    }
+
+    .icon img{
+      width:72px;
+      height:72px;
+      object-fit:cover;
+    }
+
+    .info{
+      flex:1;
+    }
+
+    .title{
+      font-weight:800;
+      font-size:22px;
+      margin:0 0 4px 0;
+      color:#0b0b0b;
+    }
+
+    .price{
+      font-weight:700;
+      font-size:18px;
+      margin:0 0 6px 0;
+      color:#111;
+    }
+
+    .price .old{
+      color:#bfbfbf;
+      text-decoration:line-through;
+      font-weight:700;
+      font-size:14px;
+      margin-left:8px;
+    }
+
+    .note{
+      color:var(--muted);
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    .discount-tag{
+      position:relative;
+      display:inline-block;
+      background:#e21b1b;
+      color:white;
+      font-weight:700;
+      padding:6px 10px;
+      border-radius:6px;
+      font-size:12px;
+      float:right;
+      margin-left:8px;
+    }
+
+    /* tombol besar */
+    .buy-wrap{
+      margin-top:16px;
+    }
+
+    .buy-btn{
+      width:100%;
+      background:var(--blue);
+      border-radius:14px;
+      padding:18px 16px;
+      text-align:center;
+      color:white;
+      font-weight:800;
+      font-size:34px;
+      border:4px solid #0b2fd6;
+      box-shadow: 0 6px 0 rgba(0,0,0,0.08);
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-block;
+    }
+
+    .buy-btn:active{ transform:translateY(2px); box-shadow:none; }
+
+    .small{
+      font-size:13px;
+      color:var(--muted);
+      text-align:center;
+      margin-top:10px;
+    }
+
+    /* responsive small screens tweak */
+    @media (max-width:360px){
+      .title{font-size:20px}
+      .buy-btn{font-size:28px; padding:14px 12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" role="region" aria-label="Informasi produk Centang biru">
+      <div class="icon" aria-hidden="true">
+        <img src="https://i.ibb.co.com/KzQdJtCm/New-Project-142-859-A8-BE.png" alt="Centang Biru">
+      </div>
+
+      <div class="info">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <h1 class="title">Centang biru</h1>
+          <div class="discount-tag" aria-hidden="true">DISKON 50,1%</div>
+        </div>
+
+        <p class="price">Rp 49.999 <span class="old">Rp 100.000</span></p>
+        <p class="note">centang biru ini hanya untuk game Tap-tap</p>
+      </div>
+    </div>
+
+    <div class="buy-wrap">
+      <a id="whatsappBtn" class="buy-btn" href="#" role="button" aria-label="Beli Centang Biru via WhatsApp">
+        Rp 49.999
+      </a>
+      <p class="small">Dengan menekan tombol, Anda akan diarahkan ke WhatsApp untuk menyelesaikan pembelian.</p>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // Nomor WhatsApp user: 083865566942
+      const phoneIntl = "6283865566942";
+
+      // Pesan pra-isi (ubah sesuai kebutuhan)
+      const product = "Centang biru";
+      const price = "Rp 49.999";
+      const message = `Saya ingin membeli ${product} seharga ${price}. Mohon info cara pembayaran dan konfirmasi.`;
+
+      // URL encode
+      const encoded = encodeURIComponent(message);
+
+      // final wa link
+      const waLink = `https://wa.me/${phoneIntl}?text=${encoded}`;
+
+      const btn = document.getElementById("whatsappBtn");
+      btn.href = waLink;
+      btn.target = "_blank";
+      btn.rel = "noopener noreferrer";
+    })();
+  </script>
+</body>
+</html>
